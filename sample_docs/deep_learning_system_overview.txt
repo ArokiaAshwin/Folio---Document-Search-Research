@@ -1,0 +1,28 @@
+# Project Titan: GenAI Autonomous Document Processing Platform
+Document Version: 3.2.0 | Classification: Internal Architecture Whitepaper
+
+## 1. Executive Summary
+Project Titan is an enterprise-scale document intelligence system developed to ingest, parse, vector-index, and query complex unstructured data. The platform combines dense vector retrieval via ChromaDB with generative large language models (such as Google Gemini 2.0 and OpenAI GPT-4o) to deliver factual, hallucination-resistant question answering.
+
+## 2. Core Architectural Components
+The Titan infrastructure consists of four primary subsystems:
+1. Document Ingestion & Chunking Service: Parses PDF, Word (DOCX), Markdown, and plain text files. It segments raw text using recursive boundary splitting with an optimal chunk size of 1000 characters and a 200-character semantic overlap.
+2. Vector Indexing & ChromaDB Store: Utilizes localized embeddings (all-MiniLM-L6-v2) to map syntactic and semantic meanings into high-dimensional vector representations. Similarity queries operate via cosine and Euclidean nearest neighbor heuristics.
+3. RAG Context Assembler: Employs relevance thresholding, source citation tagging [Doc: filename, Page: X], and top-k nearest neighbor ranking to prevent context window pollution.
+4. Reasoning & Generation Engine: Formulates strict chain-of-thought grounding prompts enforcing evidence-only responses with source provenance.
+
+## 3. Key Performance Benchmarks & Metrics
+In rigorous synthetic testing across 5,000 queries:
+- Retrieval Latency: Mean vector query latency measured at 18 milliseconds.
+- Answer Accuracy: 96.4% factual precision against established truth sets.
+- Hallucination Rate: Decreased from 14.2% (unaugmented baseline) to 0.8% with RAG grounding.
+- Throughput: Sustained 450 requests per second across distributed worker nodes.
+
+## 4. Security, Authentication, and Access Control
+All REST API endpoints are protected using HMAC-SHA256 JSON Web Tokens (JWT). Passwords undergo salt-derived PBKDF2 hashing with 100,000 iterations. The system also supports transient Demo Guest Sessions to facilitate frictionless evaluation while isolating tenant vector spaces.
+
+## 5. Future Roadmap & Strategic Directions
+The Q4 engineering roadmap focuses on three strategic milestones:
+- Milestone Alpha: Integrating hybrid dense-sparse retrieval (combining BM25 lexical search with ChromaDB dense vectors).
+- Milestone Beta: Real-time audio and multimodal document ingestion (OCR parsing for scanned schematics and handwritten annotations).
+- Milestone Gamma: Automated multi-hop reasoning over inter-document references.
