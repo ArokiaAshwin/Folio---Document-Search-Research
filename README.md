@@ -1,61 +1,73 @@
-# AI Document Q&A Chatbot | Fullstack RAG System
+# Folio — AI Document Search & Q&A Assistant | Fullstack RAG System
 
-A production-grade, GenAI-powered document question-answering chatbot that allows users to upload documents (PDF, DOCX, TXT, Markdown) and ask natural language questions with verifiable, grounded citations and source provenance.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
+[![Flask](https://img.shields.io/badge/Flask-3.0+-green.svg)](https://flask.palletsprojects.com/)
+[![ChromaDB](https://img.shields.io/badge/Vector%20DB-ChromaDB-orange.svg)](https://www.trychroma.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ed.svg)](https://www.docker.com/)
+
+A production-ready, fullstack Retrieval-Augmented Generation (RAG) platform. Upload internal documents (PDF, DOCX, TXT, Markdown) and ask natural language questions with verifiable, grounded citations and source provenance.
+
+Includes full **User Authentication** (Email/Password, Confirm Password validation, Google OAuth 2.0, Guest preview) and 1-click **Live Production Deployment** configurations for Render, Railway, and Docker.
 
 ---
 
-## Key Highlights & Features
+## Key Features
 
-- **RAG (Retrieval-Augmented Generation) Pipeline**:
-  - Recursive boundary document chunking respecting paragraph, sentence, and word hierarchies with configurable overlap.
-  - High-performance vector similarity search powered by **ChromaDB** using persistent local vector embeddings (`all-MiniLM-L6-v2`).
-- **Multi-Format Document Ingestion**:
-  - Native support for **PDF** (`pypdf`), **Word Documents** (`docx`), **Markdown**, and **Plain Text**.
-  - Tracks metadata per chunk: document ID, filename, exact page number, and chunk index.
+- **Mandatory Authentication & Page Gating**:
+  - Gated landing experience: visitors are welcomed with a sleek **Sign In** screen.
+  - **Email & Password Login**: Fast, secure login with show/hide password toggle.
+  - **Sign Up with Confirm Password**: Real-time password match validation before account creation.
+  - **Google Sign-In (OAuth 2.0)**: Integrated via Google Identity Services (GIS) with instant interactive demo fallback.
+  - **Guest Access**: 1-click preview mode for immediate testing.
+- **Advanced RAG Pipeline**:
+  - Recursive boundary chunking with configurable overlap respecting paragraph, sentence, and word hierarchies.
+  - High-performance vector similarity search powered by **ChromaDB** with persistent disk storage (`all-MiniLM-L6-v2`).
+- **Multi-Format Document Parsing**:
+  - Native parsing for **PDF** (`pypdf`), **Word Documents** (`docx`), **Markdown**, and **Plain Text**.
+  - Precise page-number and chunk metadata tracking.
 - **Dual LLM & Extractive Fallback Engine**:
-  - Integrated with **Google Gemini** (`google.genai` SDK for Gemini 2.0 Flash / 1.5 Pro).
-  - Integrated with **OpenAI** (`gpt-4o`, `gpt-4o-mini`).
-  - Built-in **Local Extractive RAG Mode**: works out-of-the-box even without an API key by extracting and synthesizing the highest-scoring vector matches.
-- **Grounded Answers & Clickable Citations**:
-  - Interactive source citation chips: `[Doc: filename, Page: X]` with vector similarity match scores.
-  - Clicking any citation opens the **Source Evidence Inspector Drawer** revealing the exact chunk text.
+  - **Google Gemini**: Gemini 2.0 Flash / 1.5 Pro via `google.genai` SDK.
+  - **OpenAI**: GPT-4o / GPT-4o-mini support.
+  - **Local Extractive RAG Mode**: Works out-of-the-box even without an external API key.
+- **Grounded Answers & Interactive Citations**:
+  - Clickable citation chips: `[Doc: filename, Page: X]` with vector similarity match scores.
+  - **Source Evidence Drawer**: Inspect the exact chunk text extracted from the source document.
 - **Chunk Inspector**:
-  - Inspect all parsed chunks, token/char lengths, and vector persistence status directly from the UI.
-- **Security & Authentication**:
-  - JWT (HMAC-SHA256) bearer token authentication.
-  - PBKDF2-HMAC-SHA256 password hashing with salt and 100,000 iterations.
-  - Instant **Demo Guest Mode** for friction-free exploration.
-- **Modern Glassmorphic React Frontend**:
-  - Futuristic dark-mode interface built with React, Vite, and Vanilla CSS.
-  - Responsive document sidebar, drag & drop uploader, chat history export, and interactive model tuning.
+  - Inspect all parsed chunks, token/character lengths, and vector persistence status directly from the UI.
+- **Production-Ready & Cloud Deployable**:
+  - Multi-stage `Dockerfile` (builds React Vite frontend and serves via Flask + Gunicorn).
+  - Pre-configured blueprints for **Render.com**, **Railway.app**, and **Docker Compose**.
 
 ---
 
-## Architecture Diagram
+## System Architecture
 
 ```
-+-------------------------------------------------------------+
-|               React + Vite Frontend (Port 5173)              |
-|  - Glassmorphic UI  - Citations Drawer  - Chunk Inspector   |
-+------------------------------+------------------------------+
-                               | REST API (JWT Bearer)
-+------------------------------v------------------------------+
-|                    Flask Backend (Port 8000)                |
-|  +--------------------------------------------------------+  |
-|  | Auth Service (JWT + PBKDF2 Password Hashing)           |  |
-|  +--------------------------------------------------------+  |
-|  | Document Processor (PDF / DOCX / TXT Splitter)         |  |
-|  +--------------------------------------------------------+  |
-|  | RAG Engine (ChromaDB PersistentClient Vector Index)    |  |
-|  +--------------------------------------------------------+  |
-|  | LLM Engine (Gemini 2.0 / OpenAI / Extractive Fallback) |  |
-|  +--------------------------------------------------------+  |
-+------------------------------+------------------------------+
-                               |
-                +--------------v-------------+
-                | ChromaDB Local Vector Store |
-                |      (./backend/chroma_db) |
-                +----------------------------+
++-------------------------------------------------------------------------+
+|                  React + Vite Frontend (Port 5173 / SPA)                 |
+|  - AuthPage (Email / Password / Confirm / Google)  - Citation Drawer    |
+|  - Document Sidebar & Uploader                     - Chunk Inspector    |
++------------------------------------+------------------------------------+
+                                     | REST API (JWT Bearer)
++------------------------------------v------------------------------------+
+|                         Flask Backend (Port 8000)                       |
+|  +-------------------------------------------------------------------+  |
+|  | Auth Module (JWT, PBKDF2 Password Hashing, Google OAuth2 verify)  |  |
+|  +-------------------------------------------------------------------+  |
+|  | Document Processor (PDF / DOCX / TXT / MD Recursive Splitter)     |  |
+|  +-------------------------------------------------------------------+  |
+|  | RAG Engine (ChromaDB PersistentClient Vector Search)              |  |
+|  +-------------------------------------------------------------------+  |
+|  | LLM Engine (Gemini 2.0 Flash / OpenAI GPT-4o / Extractive Mode)   |  |
+|  +-------------------------------------------------------------------+  |
++------------------------------------+------------------------------------+
+                                     |
+                      +--------------v--------------+
+                      | ChromaDB Local Vector Store |
+                      |    (./backend/chroma_db)    |
+                      +-----------------------------+
 ```
 
 ---
@@ -64,111 +76,160 @@ A production-grade, GenAI-powered document question-answering chatbot that allow
 
 ```
 QA chatbot/
+├── Dockerfile                # Multi-stage production container
+├── docker-compose.yml        # Docker Compose configuration with volume persistence
+├── render.yaml               # 1-click cloud deployment blueprint for Render.com
+├── railway.json              # Railway.app cloud deployment configuration
+├── Procfile                  # Process definition for Heroku / Railway
+├── DEPLOYMENT.md             # Complete step-by-step live deployment guide
+├── README.md                 # Project documentation
+├── requirements.txt          # Python root dependencies
+├── sample_docs/              # Ready-to-use sample documents (PDF, DOCX, TXT)
+│
 ├── backend/
-│   ├── chroma_db/            # ChromaDB persistent vector database
-│   ├── tests/                # Unit & E2E integration test suite
-│   │   ├── test_rag.py       # Auth, Chunker, and ChromaDB tests
-│   │   ├── test_api.py       # Flask endpoints unit tests
-│   │   └── test_e2e.py       # Full end-to-end RAG upload & Q&A test
-│   ├── uploads/              # Storage directory for uploaded documents
-│   ├── auth.py               # JWT generation, validation & password hashing
-│   ├── config.py             # Settings and environment variable loader
-│   ├── document_processor.py # Multi-format parser & recursive chunker
-│   ├── llm_engine.py         # Gemini, OpenAI, and local extractive fallback
-│   ├── main.py               # Flask application with REST endpoints & static mount
+│   ├── auth.py               # Authentication (JWT, PBKDF2, Google OAuth)
+│   ├── config.py             # Settings & environment variable loader
+│   ├── document_processor.py # PDF/DOCX/TXT parser & recursive chunker
+│   ├── llm_engine.py         # Gemini, OpenAI & local extractive RAG
+│   ├── main.py               # Flask application, REST routes & static SPA mount
 │   ├── rag_engine.py         # ChromaDB client & vector similarity search
-│   ├── requirements.txt      # Python dependencies (Flask, ChromaDB, etc.)
-│   └── .env                  # Environment variables & API key configurations
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── AuthModal.jsx           # Sign in, Sign up & Guest mode modal
-│   │   │   ├── ChatInterface.jsx       # Chat stream, suggestions, input box
-│   │   │   ├── ChatMessage.jsx         # Markdown render & interactive citation chips
-│   │   │   ├── ChunkInspectorModal.jsx # Visual inspection of vector chunks
-│   │   │   ├── CitationDrawer.jsx      # Source evidence drawer
-│   │   │   ├── DocumentSidebar.jsx     # Drag & drop uploader & doc list
-│   │   │   ├── Navbar.jsx              # Header, stats pill & settings trigger
-│   │   │   └── SettingsModal.jsx       # API keys, models & Top-K tuning
-│   │   ├── api.js            # API client with token management
-│   │   ├── App.jsx           # Root React component
-│   │   ├── index.css         # Modern glassmorphic vanilla CSS design system
-│   │   └── main.jsx          # React DOM entry point
-│   ├── index.html            # Web app entry with Google Fonts
-│   ├── package.json          # Frontend packages & scripts
-│   └── vite.config.js        # Vite config with API proxy
-└── sample_docs/              # Ready-to-use sample documents (PDF, DOCX, TXT)
+│   ├── requirements.txt      # Backend Python dependencies
+│   ├── .env                  # Backend environment variables
+│   └── tests/                # Automated test suite
+│       ├── test_api.py       # API endpoints & auth unit tests
+│       ├── test_rag.py       # Chunker & vector database tests
+│       └── test_e2e.py       # Full end-to-end upload & query verification
+│
+└── frontend/
+    ├── index.html            # Web app entry with Google Identity Services
+    ├── package.json          # Node dependencies & build scripts
+    ├── vite.config.js        # Vite config with API proxy
+    └── src/
+        ├── App.jsx           # Root component with auth gating
+        ├── api.js            # API client with JWT & Google auth
+        ├── index.css         # Modern dark-mode vanilla CSS design system
+        └── components/
+            ├── AuthPage.jsx            # Fullscreen Sign In / Sign Up / Google screen
+            ├── AuthModal.jsx           # In-app authentication dialog
+            ├── ChatInterface.jsx       # Chat stream & prompt suggestions
+            ├── ChatMessage.jsx         # Markdown answer render with citation chips
+            ├── ChunkInspectorModal.jsx # Visual inspection of vector chunks
+            ├── CitationDrawer.jsx      # Source evidence drawer
+            ├── DocumentSidebar.jsx     # Document upload & management sidebar
+            ├── Navbar.jsx              # Header, stats badge & settings trigger
+            └── SettingsModal.jsx       # LLM provider, models & Top-K tuning
 ```
 
 ---
 
-## Quickstart Guide
+## Quickstart Guide (Local Development)
 
 ### 1. Prerequisites
-- Python 3.10+
-- Node.js 18+ and npm
+- **Python 3.10+**
+- **Node.js 18+** and **npm**
 
 ### 2. Backend Setup
-Navigate to the root directory and install backend requirements:
-```bash
-pip install -r backend/requirements.txt
-```
-
-*(Optional)* Configure your Google Gemini or OpenAI API Key in `backend/.env` or configure it directly through the UI Settings dialog:
-```env
-GEMINI_API_KEY=your_gemini_api_key_here
-OPENAI_API_KEY=your_openai_api_key_here
-```
-
-Start the Flask server:
-```bash
-python backend/main.py
-```
-*(Alternatively: `python -m backend.main` or `flask --app backend.main run --port 8000`)*
+1. Open a terminal in the root directory:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. *(Optional)* Configure your Google Gemini or OpenAI API key in `backend/.env`:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   OPENAI_API_KEY=your_openai_api_key_here
+   GOOGLE_CLIENT_ID=your_google_client_id_here
+   ```
+   *(Note: The app works out-of-the-box even without API keys using smart extractive RAG).*
+3. Start the Flask server:
+   ```bash
+   python backend/main.py
+   ```
+   Server starts at `http://localhost:8000`.
 
 ### 3. Frontend Setup
-In a separate terminal, navigate to the `frontend` folder:
+In a new terminal window:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open `http://localhost:5173` in your browser.
+Open your browser at **`http://localhost:5173`**.
 
-*(Note: The Flask backend also serves the built React application directly at `http://127.0.0.1:8000` when the production bundle is built via `npm run build`).*
+---
+
+## Running with Docker (1 Command)
+
+Run both the frontend and backend with automatic ChromaDB volume persistence:
+```bash
+docker compose up -d --build
+```
+Access the application at **`http://localhost:8000`**.
+
+---
+
+## Deploying Live to the Cloud
+
+For complete instructions, see the **[DEPLOYMENT.md](DEPLOYMENT.md)** guide.
+
+### Free 1-Click Deployment on Render.com:
+1. Push this repository to GitHub.
+2. Sign in to [Render.com](https://dashboard.render.com/) and click **New +** -> **Web Service**.
+3. Connect your repository. Render will automatically detect the **`Dockerfile`**.
+4. Add your environment variables:
+   - `GEMINI_API_KEY`: Your Gemini API key
+   - `JWT_SECRET`: Random secure string
+   - `GOOGLE_CLIENT_ID`: (Optional) Your Google Cloud OAuth Client ID
+5. Click **Create Web Service**. Your app is live with a free public URL!
+
+---
+
+## REST API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/register` | Register new account (email, password, optional username) |
+| `POST` | `/api/auth/login` | Sign in with email/username and password |
+| `POST` | `/api/auth/google` | Authenticate via Google OAuth credential token |
+| `GET` | `/api/auth/config` | Retrieve public client auth settings |
+| `POST` | `/api/auth/guest` | Generate instant demo guest session |
+| `GET` | `/api/auth/me` | Fetch authenticated user profile |
+| `POST` | `/api/documents/upload` | Upload PDF, DOCX, TXT, or Markdown documents |
+| `GET` | `/api/documents` | List uploaded documents & collection stats |
+| `DELETE` | `/api/documents/{id}` | Delete document and delete vector embeddings |
+| `GET` | `/api/documents/{id}/chunks`| Inspect all parsed vector chunks for a document |
+| `POST` | `/api/chat/query` | RAG semantic retrieval & answer generation |
+| `GET` | `/api/chat/history` | Retrieve user chat history |
+| `DELETE` | `/api/chat/history` | Clear chat history |
+| `GET` | `/api/settings` | Get runtime settings and LLM configuration |
+| `POST` | `/api/settings` | Update LLM provider, API keys, and Top-K |
+| `GET` | `/api/health` | Health check endpoint and total vector chunk count |
 
 ---
 
 ## Running Automated Tests
 
-Run the full suite of unit and integration tests:
+Run the full automated test suite:
 ```bash
-# Auth, Chunker, and ChromaDB Tests
-python -m unittest backend/tests/test_rag.py
+# Run all unit and integration tests (Auth, Document Parser, ChromaDB, RAG)
+python -m unittest discover backend/tests
 
-# Flask Endpoints Unit Tests
-python -m unittest backend/tests/test_api.py
-
-# Complete End-to-End RAG Verification (with Flask server running)
+# Run End-to-End RAG Pipeline verification (with Flask server running)
 python backend/tests/test_e2e.py
 ```
 
 ---
 
-## REST API Endpoints
+## Contributing
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/auth/register` | Register a new user account |
-| `POST` | `/api/auth/login` | Sign in with username & password |
-| `POST` | `/api/auth/guest` | Instant demo guest session |
-| `POST` | `/api/documents/upload` | Multipart upload for PDF, DOCX, TXT, MD |
-| `GET` | `/api/documents` | List uploaded documents & ChromaDB stats |
-| `DELETE` | `/api/documents/{id}` | Delete document and remove ChromaDB vectors |
-| `GET` | `/api/documents/{id}/chunks` | Inspect all chunks for a document |
-| `POST` | `/api/chat/query` | RAG semantic retrieval & answer generation |
-| `GET` | `/api/chat/history` | Retrieve user chat history |
-| `DELETE` | `/api/chat/history` | Clear conversation history |
-| `GET` | `/api/settings` | Get current model and vector stats |
-| `POST` | `/api/settings` | Update runtime LLM provider, keys, and Top-K |
-| `GET` | `/api/health` | Health check & vector count |
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Open a Pull Request.
+
+---
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
