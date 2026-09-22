@@ -6,10 +6,12 @@ import ChatInterface from './components/ChatInterface';
 import CitationDrawer from './components/CitationDrawer';
 import SettingsModal from './components/SettingsModal';
 import AuthModal from './components/AuthModal';
+import AuthPage from './components/AuthPage';
 import ChunkInspectorModal from './components/ChunkInspectorModal';
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [stats, setStats] = useState({ total_chunks: 0 });
   const [selectedDocId, setSelectedDocId] = useState(null);
@@ -36,26 +38,37 @@ export default function App() {
 
   const initApp = async () => {
     try {
-      // 1. Check user token or auto-guest login
-      let currentUser = null;
       const token = getStoredToken();
       if (token) {
-        currentUser = await api.getMe().catch(() => null);
+        const currentUser = await api.getMe().catch(() => null);
+        if (currentUser) {
+          setUser(currentUser);
+          await loadWorkspaceData();
+        } else {
+          removeStoredToken();
+          setUser(null);
+        }
+      } else {
+        setUser(null);
       }
-      if (!currentUser) {
-        const guestData = await api.guestLogin();
-        currentUser = guestData.user;
-      }
-      setUser(currentUser);
+    } catch (err) {
+      console.error('Initialization error:', err);
+      setUser(null);
+    } finally {
+      setAuthChecked(true);
+    }
+  };
 
-      // 2. Fetch Settings
+  const loadWorkspaceData = async () => {
+    try {
+      // 1. Fetch Settings
       const s = await api.getSettings().catch(() => null);
       setSettingsData(s);
 
-      // 3. Fetch Documents
+      // 2. Fetch Documents
       await refreshDocuments();
 
-      // 4. Fetch Chat History
+      // 3. Fetch Chat History
       const h = await api.getChatHistory().catch(() => ({ history: [] }));
       if (h.history && h.history.length > 0) {
         const formatted = [];
@@ -72,8 +85,13 @@ export default function App() {
         setMessages(formatted);
       }
     } catch (err) {
-      console.error('Initialization error:', err);
+      console.error('Failed to load workspace data:', err);
     }
+  };
+
+  const handleAuthSuccess = async (authenticatedUser) => {
+    setUser(authenticatedUser);
+    await loadWorkspaceData();
   };
 
   const refreshDocuments = async () => {
@@ -184,13 +202,25 @@ export default function App() {
     setSettingsData(updated);
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     removeStoredToken();
-    const guestData = await api.guestLogin();
-    setUser(guestData.user);
+    setUser(null);
     setMessages([]);
-    await refreshDocuments();
+    setSelectedDocId(null);
+    setDocuments([]);
   };
+
+  if (!authChecked) {
+    return (
+      <div className="auth-loading-screen">
+        <div className="auth-spinner" style={{ width: '40px', height: '40px', borderWidth: '3px' }} />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+  }
 
   const selectedDoc = documents.find(d => d.id === selectedDocId);
 

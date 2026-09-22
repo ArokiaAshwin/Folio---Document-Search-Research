@@ -40,7 +40,7 @@ A production-grade, GenAI-powered document question-answering chatbot that allow
 +------------------------------+------------------------------+
                                | REST API (JWT Bearer)
 +------------------------------v------------------------------+
-|                   FastAPI Backend (Port 8000)                |
+|                    Flask Backend (Port 8000)                |
 |  +--------------------------------------------------------+  |
 |  | Auth Service (JWT + PBKDF2 Password Hashing)           |  |
 |  +--------------------------------------------------------+  |
@@ -68,16 +68,16 @@ QA chatbot/
 │   ├── chroma_db/            # ChromaDB persistent vector database
 │   ├── tests/                # Unit & E2E integration test suite
 │   │   ├── test_rag.py       # Auth, Chunker, and ChromaDB tests
-│   │   ├── test_api.py       # FastAPI endpoints tests
+│   │   ├── test_api.py       # Flask endpoints unit tests
 │   │   └── test_e2e.py       # Full end-to-end RAG upload & Q&A test
 │   ├── uploads/              # Storage directory for uploaded documents
 │   ├── auth.py               # JWT generation, validation & password hashing
 │   ├── config.py             # Settings and environment variable loader
 │   ├── document_processor.py # Multi-format parser & recursive chunker
 │   ├── llm_engine.py         # Gemini, OpenAI, and local extractive fallback
-│   ├── main.py               # FastAPI application with REST endpoints & static mount
+│   ├── main.py               # Flask application with REST endpoints & static mount
 │   ├── rag_engine.py         # ChromaDB client & vector similarity search
-│   ├── requirements.txt      # Python dependencies
+│   ├── requirements.txt      # Python dependencies (Flask, ChromaDB, etc.)
 │   └── .env                  # Environment variables & API key configurations
 ├── frontend/
 │   ├── src/
@@ -120,11 +120,11 @@ GEMINI_API_KEY=your_gemini_api_key_here
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-Start the FastAPI server:
+Start the Flask server:
 ```bash
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+python backend/main.py
 ```
-FastAPI interactive Swagger docs will be available at: `http://127.0.0.1:8000/docs`.
+*(Alternatively: `python -m backend.main` or `flask --app backend.main run --port 8000`)*
 
 ### 3. Frontend Setup
 In a separate terminal, navigate to the `frontend` folder:
@@ -135,7 +135,7 @@ npm run dev
 ```
 Open `http://localhost:5173` in your browser.
 
-*(Note: The FastAPI backend also serves the built React application directly at `http://127.0.0.1:8000` when the production bundle is built via `npm run build`).*
+*(Note: The Flask backend also serves the built React application directly at `http://127.0.0.1:8000` when the production bundle is built via `npm run build`).*
 
 ---
 
@@ -146,10 +146,10 @@ Run the full suite of unit and integration tests:
 # Auth, Chunker, and ChromaDB Tests
 python -m unittest backend/tests/test_rag.py
 
-# FastAPI Endpoints Tests
+# Flask Endpoints Unit Tests
 python -m unittest backend/tests/test_api.py
 
-# Complete End-to-End RAG Verification
+# Complete End-to-End RAG Verification (with Flask server running)
 python backend/tests/test_e2e.py
 ```
 

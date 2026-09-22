@@ -15,11 +15,15 @@ const getAuthHeaders = () => {
 
 export const api = {
   // Auth
-  async login(username, password) {
+  async login(identifier, password) {
+    const payload = identifier.includes('@') 
+      ? { email: identifier, password } 
+      : { username: identifier, password };
+
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify(payload)
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -30,11 +34,14 @@ export const api = {
     return data;
   },
 
-  async register(username, email, password) {
+  async register(email, password, username) {
+    const payload = { email, password };
+    if (username) payload.username = username;
+
     const res = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify(payload)
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -43,6 +50,27 @@ export const api = {
     const data = await res.json();
     setStoredToken(data.access_token);
     return data;
+  },
+
+  async googleLogin(credential) {
+    const res = await fetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Google sign-in failed');
+    }
+    const data = await res.json();
+    setStoredToken(data.access_token);
+    return data;
+  },
+
+  async getAuthConfig() {
+    const res = await fetch(`${API_BASE}/auth/config`);
+    if (!res.ok) return { google_client_id: '' };
+    return await res.json();
   },
 
   async guestLogin() {

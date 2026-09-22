@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - JWT_SECRET=${JWT_SECRET:-supersecret-document-qa-jwt-key-2026-production}
+      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-gemini}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-gemini-2.0-flash}
+    volumes:
+      - chroma_data:/app/backend/chroma_db
+      - upload_data:/app/backend/uploads
+    restart: unless-stopped
+
+volumes:
+  chroma_data:
+  upload_data:

@@ -19,6 +19,7 @@ class Settings:
     
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     
     DEFAULT_LLM_PROVIDER: str = os.getenv("DEFAULT_LLM_PROVIDER", "gemini")
     DEFAULT_MODEL: str = os.getenv("DEFAULT_MODEL", "gemini-2.0-flash")
